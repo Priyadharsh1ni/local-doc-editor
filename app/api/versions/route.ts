@@ -1,13 +1,17 @@
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import { verifyToken } from "@/lib/jwt";
 
 export async function POST(req: NextRequest) {
     try {
-        const token = req.cookies.get("token")?.value;
+        const auth = req.headers.get("authorization");
+        if (!auth || !auth.startsWith("Bearer ")) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
-
-        const user = jwt.verify(token, process.env.JWT_SECRET!) as { id: number };
+        const token = auth.split(" ")[1];
+        const decoded = await verifyToken(token);
         const { documentId, snapshot, startBlockIndex, baseVersion } =
             await req.json();
 
@@ -28,8 +32,8 @@ export async function POST(req: NextRequest) {
                 documentId,
                 snapshot,
                 startBlockIndex ?? 0,
-                baseVersion ?? 0, 
-                user.id,
+                baseVersion ?? 0,
+                decoded.id,
 
             ]
         );

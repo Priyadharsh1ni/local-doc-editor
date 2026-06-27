@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { db } from "@/lib/db";
+import { verifyToken }  from "@/lib/jwt";
 
 export async function POST(req: NextRequest) {
     try {
 
-        const token = req.cookies.get("token")?.value;
+        const auth = req.headers.get("authorization");
+        if (!auth || !auth.startsWith("Bearer ")) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
-
-        const user = jwt.verify(token, process.env.JWT_SECRET!) as { id: number };
+        const token = auth.split(" ")[1];
+        const decoded = await verifyToken(token);
 
         const body = await req.json();
         const title = body?.title?.trim() || "Untitled Document";
@@ -18,7 +22,7 @@ export async function POST(req: NextRequest) {
       INSERT INTO documents (title, owner_id, content, version, created_by)
       VALUES (?, ?, '', 1, ?)
       `,
-            [title, user.id, user.id]
+            [title, decoded.id, decoded.id]
         );
 
         const documentId = result.insertId;
@@ -51,9 +55,7 @@ export async function GET(req: NextRequest) {
         }
 
         const token = auth.split(" ")[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-            id: number;
-        };
+        const decoded = await verifyToken(token);
 
         const [rows]: any = await db.query(
             `
@@ -85,11 +87,13 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
     try {
-        const token = req.cookies.get("token")?.value;
+                const auth = req.headers.get("authorization");
+        if (!auth || !auth.startsWith("Bearer ")) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-            id: number;
-        };
+        const token = auth.split(" ")[1];
+        const decoded = await verifyToken(token);
 
         const body = await req.json();
         const documentId = body?.documentId;

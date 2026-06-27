@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { db } from "@/lib/db";
+import { verifyToken } from "@/lib/jwt";
 
 export async function POST(req: NextRequest) {
-    const token = req.cookies.get("token")?.value;
+        const auth = req.headers.get("authorization");
+        if (!auth || !auth.startsWith("Bearer ")) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
-    const user = jwt.verify(token, process.env.JWT_SECRET!) as { id: number };
-
+        const token = auth.split(" ")[1];
+        const decoded = await verifyToken(token);
     const { documentId, content } = await req.json();
 
 
@@ -15,7 +19,7 @@ export async function POST(req: NextRequest) {
     SELECT role FROM document_permissions
     WHERE document_id = ? AND user_id = ?
     `,
-        [documentId, user.id]
+        [documentId, decoded.id]
     );
 
     if (!perm.length || perm[0].role === "VIEWER") {
