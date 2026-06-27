@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       INSERT INTO document_permissions (document_id, user_id, role)
       VALUES (?, ?, 'OWNER')
       `,
-            [documentId, user.id]
+            [documentId, decoded.id]
         );
 
         return NextResponse.json({ documentId }, { status: 201 });
