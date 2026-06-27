@@ -2,12 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import EditorJS from "@editorjs/editorjs";
-import Paragraph from "@editorjs/paragraph";
-import Header from "@editorjs/header";
-import Quote from "@editorjs/quote";
-import List from "@editorjs/list";
-import ImageTool from "@editorjs/image";
-import Warning from "@editorjs/warning";
+import { editorTools } from "@/lib/editorTools";
 import ConnectionStatus from "./ConnectionStatus";
 import VersionTimeline from "./VersionTimeline";
 
@@ -48,19 +43,9 @@ export default function Editor({ docId }: { docId: string }) {
       holder: holderRef.current,
       autofocus: true,
       data,
-      tools: {
-        paragraph: { class: Paragraph, inlineToolbar: true },
-        header: {
-          class: Header,
-          inlineToolbar: true,
-          config: { levels: [1, 2, 3], defaultLevel: 2 },
-        },
-        quote: { class: Quote, inlineToolbar: true },
-        list: { class: List, inlineToolbar: true },
-        image: { class: ImageTool },
-        warning: { class: Warning },
-      },
+      tools: editorTools,
       onReady() {
+        isEditorReadyRef.current = true;
         startLocalAutosave();
       },
     });
@@ -74,7 +59,7 @@ useEffect(() => {
       setTitle(doc.title);
 
       const localDraft = localStorage.getItem(LOCAL_KEY(docId));
-      let editorData = { blocks: [] };
+      let editorData: EditorJS.OutputData = { blocks: [] };
 
       if (localDraft) {
         editorData = JSON.parse(localDraft);
@@ -265,8 +250,9 @@ useEffect(() => {
 
     setTimeout(() => {
       const index = version.start_block_index ?? 0;
-      editorRef.current?.blocks.focus(index);
-      editorRef.current?.blocks.scrollTo(index);
+      const blocks = editorRef.current?.blocks as any;
+      blocks?.focus?.(index);
+      blocks?.scrollTo(index);
     }, 300);
   }
 
@@ -318,7 +304,7 @@ useEffect(() => {
       </div>
       <div className="flex overflow-hidden border-r">
         <div className="w-[20%] shadow-xl">
-          <VersionTimeline documentId={docId} onSelectVersion={loadVersion} />
+          <VersionTimeline documentId={Number(docId)} onSelectVersion={loadVersion} />
         </div>
         <div
           ref={holderRef}
