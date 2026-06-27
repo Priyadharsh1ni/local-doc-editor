@@ -1,11 +1,11 @@
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
-const SECRET = process.env.JWT_SECRET!;
+const JWT_SECRET = process.env.JWT_SECRET!;
 
-export function signToken(payload: any) {
-  return jwt.sign(payload, SECRET, { expiresIn: "7d" });
+export function signToken(payload: JwtPayload, expiresIn = "7d") {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn });
 }
 
 export function verifyToken(token: string) {
-  return jwt.verify(token, SECRET);
+  return jwt.verify(token, JWT_SECRET) as JwtPayload;
 }
