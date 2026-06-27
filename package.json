@@ -9,9 +9,23 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@editorjs/checklist": "^1.6.0",
+    "@editorjs/editorjs": "^2.31.6",
+    "@editorjs/header": "^2.8.9",
+    "@editorjs/image": "^2.10.3",
+    "@editorjs/link": "^2.6.2",
+    "@editorjs/list": "^2.0.9",
+    "@editorjs/nested-list": "^1.4.3",
+    "@editorjs/paragraph": "^2.11.7",
+    "@editorjs/quote": "^2.7.6",
+    "@editorjs/warning": "^1.4.1",
+    "bcrypt": "^6.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.22.5",
     "next": "16.2.9",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "title-editorjs": "^1.0.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

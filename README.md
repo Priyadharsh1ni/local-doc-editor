@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📝 Local Doc Editor (Offline-Safe Versioned Editor)
 
-## Getting Started
+A **Next.js + Editor.js** based document editor with offline support, auto draft saving, server sync, and version history with cursor restoration.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### ✨ Editor
+- Built using **Editor.js**
+- Supports:
+  - Paragraph
+  - Header
+  - List
+  - Quote
+  - Image
+  - Warning blocks
+- Cursor automatically moves to the exact block when a version is selected
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 📶 Offline-First Support
+- Auto-saves drafts to **localStorage**
+- Works even when the internet connection drops
+- Automatically syncs content to the server when back online
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+### 🕒 Version History
+- Every save creates a snapshot
+- Versions stored in `document_versions` table
+- Clicking a version restores:
+  - Full document content
+  - Cursor position (block index)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 🗂 Documents Dashboard
+- Create new documents
+- View documents in a card layout
+- Rename documents inline (real-time update)
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🧠 Tech Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Layer      | Tech |
+|-----------|------|
+| Frontend  | Next.js (App Router), React, Tailwind CSS |
+| Editor    | Editor.js |
+| Backend   | Next.js API Routes |
+| Database  | MySQL |
+| Auth      | Token-based (localStorage) |
+| Storage   | localStorage (offline drafts) |
+
+---
+
+##  Database Schema  API Endpoints
+
+### `documents`
+```sql
+CREATE TABLE documents (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(255),
+  content LONGTEXT,
+  snapshot LONGTEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+    ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE document_versions (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  document_id INT,
+  snapshot LONGTEXT,
+  start_block_index INT DEFAULT 0,
+  base_version INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+---
+ 
+## API Endpoints
+
+Documents
+POST /api/documents → Create document
+GET /api/documents → List documents
+GET /api/documents/:id → Get document
+PATCH /api/documents → Rename document
+
+Sync
+POST /api/sync → Save document content
+
+
+Versions
+POST /api/versions → Create version snapshot
+GET /api/versions?documentId=ID → Get all versions
+GET /api/versions?documentId=ID&latest=true → Get latest version
+
+
+How Version Restore Works
+1.User clicks a version timestamp
+2.Snapshot JSON is loaded into Editor.js
+3.Editor is re-initialized
+4.Cursor focuses on the saved start_block_index
+
+
+Setup Instructions
+
+clone repositary 
+--git clone <repo url>
+--npm install
+--npm run dev
+
+
+Testing Scenarios
+
+1.Disconnect internet → continue typing → reconnect → auto sync
+2.Refresh page → local draft restores
+3.Click version → cursor jumps to correct block
+4.Rename title → reflected instantly
+
+
+Login credentials
+email : user@gmail.com
+password : test@123
